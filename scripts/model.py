@@ -92,7 +92,7 @@ class VQAD4Model:
 
        with tf.name_scope("MLP"):
 
-            with open("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json", 'r') as f:  #should be in args
+            with open("/data/vocab.json", 'r') as f:  #should be in args
                 vocab = json.load(f)['answer_token_to_idx']
 
             output_dim = len(vocab)
