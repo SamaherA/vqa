@@ -7,9 +7,7 @@ from torch.utils.data.dataloader import default_collate
 torch.backends.cudnn.enabled = True
 from torch.autograd import Variable
 
-# question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
-# feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
-vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
+vocab = '/data/vocab.json'
 
 vocab = utils.load_vocab(vocab)
 def _dataset_to_tensor(dset, mask=None):
