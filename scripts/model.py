@@ -1,19 +1,19 @@
 import tensorflow as tf
 import numpy as np
 import json
-from d4.d4.interpreter import SimpleInterpreter
-from d4.d4.dsm.loss import CrossEntropyLoss
-from d4.experiments.wap.load_data import ArithmeticDataset
-from d4.d4.dsm.extensible_dsm import print_dsm_state_np
+from d4.interpreter import SimpleInterpreter
+from d4.dsm.loss import CrossEntropyLoss
+from experiments.wap.load_data import ArithmeticDataset
+from d4.dsm.extensible_dsm import print_dsm_state_np
 from collections import namedtuple
-import iep.utils as utils
+import utils
 from iep.data import ClevrDataset, ClevrDataLoader
 
 eps = 0.00000000000000000000001
 
 d4InitParams = namedtuple("d4InitParams", "stack_size value_size batch_size min_return_width")
 
-DataParams = namedtuple("DataParams", "vocab_size max_length max_args wordvec_dim rnn_dim img_size num_channels token_to_idx")
+DataParams = namedtuple("DataParams", "max_length  wordvec_dim rnn_dim img_size num_channels token_to_idx")
 
 TrainParams = namedtuple("TrainParams", "train learning_rate num_steps_train num_steps_test")
 
@@ -58,7 +58,7 @@ class VQAD4Model:
 
    def cnn_lstm_model(self):
        with tf.name_scope("embedding"):
-            embeddings = tf.Variable(tf.random_normal([len(self.token_to_idx), self.wordvec_dim],
+            embeddings = tf.Variable(tf.random_normal([61, self.wordvec_dim],
                                                       mean=0.0, stddev=0.1, dtype=tf.float32),
                                      name="embedding_matrix")
 
@@ -69,7 +69,7 @@ class VQAD4Model:
 
        inputs = input_embedded
        with tf.name_scope("LSTM"):
-           lstm_cell = tf.contrib.rnn.BasicLSTMCell(self.rnn_dim,
+           lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(self.rnn_dim,
                                                     forget_bias=1.0)
            outputs,_ = tf.nn.dynamic_rnn(lstm_cell, inputs,
                                                sequence_length=self._pl_text_len,
@@ -103,7 +103,7 @@ class VQAD4Model:
 
        with tf.name_scope("CNN"):
            filter = (1, 1, 1024, 512)
-           N, _ = self._pl_text.get_shape()
+           # N, _ = self._pl_text.get_shape()
 
            initial = tf.Variable(tf.truncated_normal(filter, stddev=0.1))  # W
            # x = tf.placeholder(tf.float32)  # input
@@ -112,30 +112,35 @@ class VQAD4Model:
            relu = tf.nn.relu(conv)
            pool = tf.nn.max_pool(relu, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                                  padding='SAME')  # ksize=[1, 2, 2, 1],strides=[1, 2, 2, 1]
-           output_cnn = tf.reshape(pool, [N, -1])  # (batch_size, 25088)
+           output_cnn = tf.reshape(pool, [self.batch_size, -1])  # (batch_size, 25088)
 
        with tf.name_scope("output"):
 
-            with tf.name_scope("rnn output"):
+            with tf.name_scope("rnn_output"):
                 CN = tf.shape(output_cnn)
                 QN = tf.shape(output_rnn)
                 empty2 = tf.zeros([self.batch_size, CN[1] - QN[1]])
                 self.output_rnn = tf.concat(1, [output_rnn, empty2])
 
-            with tf.name_scope("cnn output"):
+            with tf.name_scope("cnn_output"):
                 self.output_cnn = output_cnn
 
    def _assemble_heap(self):
        with tf.name_scope("heap_assembly"):
-            with tf.name_scope("rnn output"):
+            with tf.name_scope("rnn_output"):
                 output_rnn = tf.expand_dims(self.output_rnn, 1)
+                print(output_rnn)
 
-            with tf.name_scope("cnn output"):
+            with tf.name_scope("cnn_output"):
                 output_cnn = tf.expand_dims(self.output_cnn, 1)
+                print(output_cnn)
 
             empty = tf.zeros([self.batch_size, 1, self.value_size], name="empty_values")
+            print(empty)
             with tf.name_scope("heap"):
-                self._init_heap = tf.concat(1, [output_rnn, output_cnn] + [empty] * (self.value_size - 1))
+                self._init_heap = tf.concat(1, [output_rnn, output_cnn] + [empty] * (self.value_size - 2))
+                print(self._init_heap)
+                print("Done init_heap")
 
    def _add_nam(self):
         self.interpreter = SimpleInterpreter(stack_size=self.stack_size,
@@ -144,19 +149,21 @@ class VQAD4Model:
                                              batch_size=self.batch_size)
         for batch in range(self.batch_size):
             self.interpreter.load_code(self.sketch, batch)
-
+        print('done')
         if self.train:
             self.interpreter.set_heap(self._init_heap)
-
+        print('done')
         self.interpreter.create_initial_dsm()
+        print('done')
 
         trace = self.interpreter.execute(self.num_steps_train)
+        print('done')
         # self._trace = trace
         # self._dsm_loss = L2Loss(trace[-1], self.interpreter)
         self._dsm_loss = CrossEntropyLoss(trace[-1], self.interpreter)
         self._loss = self._dsm_loss.loss
         tf.scalar_summary('loss_per_batch', tf.minimum(1000.0, self._loss))
-
+        print("Done add_nam")
 
    def _add_train(self):
         with tf.name_scope("optimiser"):
@@ -245,7 +252,7 @@ class VQAD4Model:
         # total input feed
         return self._dsm_loss.current_feed_dict(feed)
 
-   def run_train_step(self, sess, data_batch):
+   def run_train_step(self, sess, data_batch: ClevrDataLoader):
         feed_in = self._complete_feed(data_batch)
 
         # desired output
@@ -254,18 +261,17 @@ class VQAD4Model:
         for j in range(self.batch_size):
             # self.interpreter.load_stack(data_batch.input_seq[j], j)
             # print(data_batch.targets[j])
-            self._dsm_loss.load_target_stack(data_batch.targets[j], j)
+            self._dsm_loss.load_target_stack(data_batch.answers[j], j)
 
         return sess.run(feed_out, feed_dict=feed_in)
 
-   def run_eval_step(self, sess, data, debug=False):
+   def run_eval_step(self, sess, data: ClevrDataLoader, debug=False):
         # BiRNN input feed
 
-        data_tokens = data.tokens
-        data_seq_lengths = data.seq_lengths
-        data_num_pos = data.num_pos
-        data_nums = data.nums
-        data_targets = data.targets
+        data_questions = data.questions
+        data_feats = data.feats
+        data_targets = data.answers
+
 
         num_batches = len(data_targets) // self.batch_size
         rest = len(data_targets) % self.batch_size
@@ -277,10 +283,8 @@ class VQAD4Model:
 
             pad = lambda x: np.pad(x, ((0, (self.batch_size - rest)), (0, 0)), 'edge')
 
-            data_tokens = pad(data_tokens)
-            data_seq_lengths = np.pad(data_seq_lengths, (0, self.batch_size - rest), 'edge')
-            data_num_pos = pad(data_num_pos)
-            data_nums = pad(data_nums)
+            data_questions = pad(data_questions)
+            data_feats = pad(data_feats)
             data_targets = pad(data_targets)
 
         counter = 0
@@ -290,10 +294,8 @@ class VQAD4Model:
             start = i * self.batch_size
             end = (i + 1) * self.batch_size
 
-            data_batch = ArithmeticDataset(data_tokens[start:end],
-                                           data_seq_lengths[start:end],
-                                           data_num_pos[start:end],
-                                           data_nums[start:end],
+            data_batch = ArithmeticDataset(data_questions[start:end],
+                                           data_feats[start:end],
                                            data_targets[start:end])
 
             # print(data_batch.targets)
@@ -309,7 +311,7 @@ class VQAD4Model:
                                                           external_feed_dict=feed,)
                                                         # use_argmax_pointers=True,
                                                         # use_argmax_stacks=True,
-                                                        # data=(data_nums[start:end],
+                                                        # data=(data_feats[start:end],
                                                         #       data_targets[start:end]))
 
             last_state = trace[-1]
@@ -342,7 +344,7 @@ class VQAD4Model:
                 result = np.argmax(DS[:, :, j], 0)[dstack_p: dstack_p + 1]
                 # print(data_batch.targets[i], 'vs', result)
                 # print(data_batch.targets[j], result)
-                if data_batch.targets[j] == result:
+                if data_batch.answers[j] == result:
                     hits += 1.0
 
         accuracy = hits / dataset_size
@@ -377,7 +379,7 @@ class VQAD4Model:
         #
         #     feed_dict[self.test_time_pc] = sharpen(pc)
 
-   def run_test_step(self, sess, data_batch):
+   def run_test_step(self, sess, data_batch: ClevrDataLoader):
         # BiRNN input feed
         feed = self._build_birnn_feed(data_batch)
 
@@ -497,23 +499,23 @@ class VQAD4Model:
 if __name__ == "__main__":
     # dataset load
     # data = load_all_datasets()
-    question_h5 = '/data/train_questions.h5'
-    feature_h5 = '/data/train_features.h5'
-    vocab = '/data/vocab.json'
+    # question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
+    # feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
+    # vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
 
-    train_loader_kwargs = {
-        'question_h5': question_h5,
-        'feature_h5': feature_h5,
-        'vocab': vocab,
-        'batch_size': 10,
-        'shuffle': 0,
-        'question_families': None,
-        'max_samples': None,
-        'num_workers': 1,
-    }
-    data_batch = data = ClevrDataLoader(**train_loader_kwargs)
+    # train_loader_kwargs = {
+    #     'question_h5': question_h5,
+    #     'feature_h5': feature_h5,
+    #     'vocab': vocab,
+    #     'batch_size': 10,
+    #     'shuffle': 0,
+    #     'question_families': None,
+    #     'max_samples': None,
+    #     'num_workers': 1,
+    # }
+    # data_batch = data = ClevrDataLoader(**train_loader_kwargs)
 
-    TOKEN_TO_IDX = utils.load_vocab("/data/vocab.json")['question_token_to_idx']
+    TOKEN_TO_IDX = utils.load_vocab("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json")['question_token_to_idx']
 
     # parameter setup
     MAX_LENGTH = 41

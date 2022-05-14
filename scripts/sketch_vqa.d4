@@ -1,0 +1,12 @@
+VARIABLE QUESTION
+VARIABLE FEATS
+
+QUESTION @ >R
+FEATS @ >R
+
+{ observe R0 R-1 -> choose 3 4 5 6 7 8 9 10 }
+{ observe R0 R-1 -> choose 3 4 5 6 7 8 9 10 }
+{ observe R0 R-1 -> choose > < = }
+
+R> DROP
+R> DROP
