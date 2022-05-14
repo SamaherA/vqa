@@ -51,13 +51,9 @@ def main(argv):
         return scaffold
 
     # building batcher
-    # question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
-    # feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
-    # vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
-
-    question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/Dataset/onebatch_questions.h5'
-    feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/Dataset/onebatch_features.h5'
-    vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
+    question_h5 = '/Dataset/onebatch_questions.h5'
+    feature_h5 = '/Dataset/onebatch_features.h5'
+    vocab = '/vqa/data/vocab.json'
 
     train_loader_kwargs = {
         'question_h5': question_h5,
@@ -72,7 +68,7 @@ def main(argv):
     batcher_train = ClevrDataLoader(**train_loader_kwargs)
 
     # build the model
-    sketch = load_sketch_from_file("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/sketch_vqa.d4")
+    sketch = load_sketch_from_file("/vqa/sketch_vqa.d4")
     # print(sketch)
     model = VQAD4Model(sketch, d4_params, data_params, train_params)
     model.build_graph()
