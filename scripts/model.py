@@ -499,9 +499,9 @@ class VQAD4Model:
 if __name__ == "__main__":
     # dataset load
     # data = load_all_datasets()
-    # question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
-    # feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
-    # vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
+    # question_h5 = '/vqa/data/train_questions.h5'
+    # feature_h5 = '/vqa/data/train_features.h5'
+    # vocab = '/vqa/data/vocab.json'
 
     # train_loader_kwargs = {
     #     'question_h5': question_h5,
@@ -515,7 +515,7 @@ if __name__ == "__main__":
     # }
     # data_batch = data = ClevrDataLoader(**train_loader_kwargs)
 
-    TOKEN_TO_IDX = utils.load_vocab("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json")['question_token_to_idx']
+    TOKEN_TO_IDX = utils.load_vocab("/vqa/data/vocab.json")['question_token_to_idx']
 
     # parameter setup
     MAX_LENGTH = 41
