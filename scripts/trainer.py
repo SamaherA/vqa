@@ -14,7 +14,7 @@ def main(argv):
 
     # data, MAX_LENGTH, MAX_ARGS, VOCAB_SIZE = load_all_datasets()
 
-    TOKEN_TO_IDX = utils.load_vocab("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json")['question_token_to_idx']
+    TOKEN_TO_IDX = utils.load_vocab("/vqa/data/vocab.json")['question_token_to_idx']
 
     # parameter setup
     MAX_LENGTH = 41
