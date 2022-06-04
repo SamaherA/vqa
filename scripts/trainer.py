@@ -1,10 +1,13 @@
+import math
+import os
+import d4.interpreter as si
 import numpy as np
 import tensorflow as tf
 from data import ClevrDataset, ClevrDataLoader
 from model import d4InitParams, DataParams, TrainParams, VQAD4Model
 import utils
-# np.set_printoptions(linewidth=20000, precision=5, suppress=True, threshold=np.nan)
-np.set_printoptions(threshold=np.inf)
+import h5py
+np.set_printoptions(linewidth=20000, precision=5, suppress=True, threshold=np.inf)
 
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_integer("test", -1, "secret stuff!")
@@ -14,18 +17,30 @@ def main(argv):
 
     # data, MAX_LENGTH, MAX_ARGS, VOCAB_SIZE = load_all_datasets()
 
-    TOKEN_TO_IDX = utils.load_vocab("/vqa/data/vocab.json")['question_token_to_idx']
+    TOKEN_TO_IDX = utils.load_vocab("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json")['question_token_to_idx']
+
+    question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/train_questions.h5'
+    feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/train_features.h5'
+    vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
+
+    dev_question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/dev_questions.h5'
+    dev_feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/dev_features.h5'
+
+    TRAINE_SIZE = h5py.File(question_h5,'r')['questions'][:].shape[0]
+    DEV_SIZE = h5py.File(dev_question_h5,'r')['questions'][:].shape[0]
 
     # parameter setup
     MAX_LENGTH = 41
-    BATCH_SIZE = 5
-    VALUE_SIZE = 25088
+    BATCH_SIZE = 50
+    VALUE_SIZE = 400         # value size must be 400 or less
     MIN_RETURN_WIDTH = VALUE_SIZE           #<<<
-    STACK_SIZE = 10                         #<<<
+    STACK_SIZE = 5                         #<<<
     WORDVEC_DIM = 300
     RNN_DIM = 256
     IMG_SIZE= 14
     NUM_CHANNELS = 1024
+
+    BATCH_NUMBER = TRAINE_SIZE // BATCH_SIZE
 
     d4_params = d4InitParams(stack_size=STACK_SIZE,
                              value_size=VALUE_SIZE,
@@ -51,15 +66,16 @@ def main(argv):
         return scaffold
 
     # building batcher
-    question_h5 = '/Dataset/onebatch_questions.h5'
-    feature_h5 = '/Dataset/onebatch_features.h5'
-    vocab = '/vqa/data/vocab.json'
+    # question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
+    # feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
+    # vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
+
 
     train_loader_kwargs = {
         'question_h5': question_h5,
         'feature_h5': feature_h5,
         'vocab': vocab,
-        'batch_size': 1,
+        'batch_size': BATCH_SIZE,
         'shuffle': 0,
         'question_families': None,
         'max_samples': None,
@@ -67,13 +83,42 @@ def main(argv):
     }
     batcher_train = ClevrDataLoader(**train_loader_kwargs)
 
+    train_loader_kwargs = {
+        'question_h5': question_h5,
+        'feature_h5': feature_h5,
+        'vocab': vocab,
+        'batch_size': TRAINE_SIZE,
+        'shuffle': 0,
+        'question_families': None,
+        'max_samples': None,
+        'num_workers': 1,
+    }
+    batcher_eval_train = ClevrDataLoader(**train_loader_kwargs)
+
+    train_loader_kwargs = {
+        'question_h5': dev_question_h5,   #dev_question_h5
+        'feature_h5': dev_feature_h5,     #dev_features_h5
+        'vocab': vocab,
+        'batch_size': DEV_SIZE,
+        'shuffle': 0,
+        'question_families': None,
+        'max_samples': None,
+        'num_workers': 1,
+    }
+    batcher_eval_dev = ClevrDataLoader(**train_loader_kwargs)
+
+
+
     # build the model
-    sketch = load_sketch_from_file("/vqa/sketch_vqa.d4")
+    sketch = load_sketch_from_file("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/sketch_vqa.d4")
     # print(sketch)
     model = VQAD4Model(sketch, d4_params, data_params, train_params)
     model.build_graph()
 
-    directory_save = "./tmp/wap/checkpoints/"
+    graph = tf.get_default_graph()
+    print('graph', graph.as_graph_def().ByteSize())
+
+    directory_save = "/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/tmp/vqa/checkpoints/"
     import os
     if not os.path.exists(directory_save):
         os.makedirs(directory_save)
@@ -91,23 +136,25 @@ def main(argv):
         #     # accuracy, partial_accuracy = model.run_eval_step(sess, dataset_dev)
         #     exit(0)
 
-        summary_writer = tf.train.SummaryWriter("./tmp/summaries/wap", tf.get_default_graph())
+        summary_writer = tf.train.SummaryWriter("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/tmp/summaries/vqa", tf.get_default_graph())
         sess.run(tf.initialize_all_variables())
 
-        for epoch in range(50):
+        for epoch in range(1):
             epoch_count.assign_add(1)
             print('epoch', epoch)
 
             # TRAIN
             total_loss = 0.0
-            for batch_no in range(batcher_train.batch_number):
-                batch = batcher_train.next_batch()
+            for batch in batcher_train:
+                # questions, feats, answers = batch
+                # print('batchh', questions.shape[0])
                 _, summaries, loss, global_step = model.run_train_step(sess, batch)
+
                 # print('    Loss per batch: ', loss / BATCH_SIZE)
                 total_loss += loss
                 summary_writer.add_summary(summaries, global_step)
 
-            total_loss /= (batcher_train.batch_number * BATCH_SIZE)
+            total_loss /= (BATCH_NUMBER * BATCH_SIZE)
             print('  loss per epoch: ', total_loss)
 
             # logging summaries
@@ -117,16 +164,21 @@ def main(argv):
             summary_writer.add_summary(summary_loss, epoch)
             summary_writer.flush()
 
+
+            print("DONE!")
             # if epoch % 10 == 0:
             #     model.run_test_step(sess, batch)
-
+            #
             print("  train set eval...")
             if epoch % 1 == 0:
-                model.run_eval_step(sess, data.train, debug=False)
+                for batch in batcher_eval_train:
+                 model.run_eval_step(sess, batch, debug=False)
+            print('DONE!')
 
             print("  dev set eval...")
             if epoch % 1 == 0:
-                accuracy = model.run_eval_step(sess, data.dev)
+               for batch in batcher_eval_dev:
+                accuracy = model.run_eval_step(sess, batch)
                 if accuracy > max_accuracy and accuracy > 0.94:
                     max_accuracy = accuracy
                     print('Saving model...')

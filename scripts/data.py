@@ -7,7 +7,9 @@ from torch.utils.data.dataloader import default_collate
 torch.backends.cudnn.enabled = True
 from torch.autograd import Variable
 
-vocab = '/data/vocab.json'
+# question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
+# feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
+vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
 
 vocab = utils.load_vocab(vocab)
 def _dataset_to_tensor(dset, mask=None):
@@ -16,6 +18,15 @@ def _dataset_to_tensor(dset, mask=None):
     arr = arr[mask]
   tensor = torch.LongTensor(arr)
   return tensor
+
+class Dataset_eval:
+    def __init__(self, ids, seq_length, number_positions, numbers, target_values):
+      self.tokens = ids
+      self.seq_lengths = seq_length
+      self.num_pos = number_positions
+      self.nums = numbers
+      self.targets = target_values
+
 
 class ClevrDataset(Dataset):
   def __init__(self, question_h5, feature_h5, vocab, mode='prefix', max_samples=None, question_families=None,
@@ -43,8 +54,8 @@ class ClevrDataset(Dataset):
       mask = all_image_idxs >= image_idx_start_from
 
     # Data from the question file is small, so read it all into memory
-    print('Reading question data into memory')
-    self.all_questions = _dataset_to_tensor(question_h5['questions'][:29], mask)
+    # print('Reading question data into memory')
+    self.all_questions = _dataset_to_tensor(question_h5['questions'][:], mask)
     self.all_image_idxs = _dataset_to_tensor(question_h5['image_idxs'], mask)
     self.all_answers = _dataset_to_tensor(question_h5['answers'], mask)
 
@@ -54,6 +65,7 @@ class ClevrDataset(Dataset):
     answer = self.all_answers[index]
     feats = self.feature_h5['features'][image_idx]
     feats = torch.FloatTensor(np.asarray(feats, dtype=np.float32))
+
 
     return (question, feats, answer)
 
@@ -73,7 +85,7 @@ class ClevrDataLoader(DataLoader):
       raise ValueError('Must give vocab')
 
     feature_h5_path = kwargs.pop('feature_h5')
-    print('Reading features from ', feature_h5_path)
+    # print('Reading features from ', feature_h5_path)
     self.feature_h5 = h5py.File(feature_h5_path, 'r')
 
     vocab = kwargs.pop('vocab')
@@ -83,7 +95,7 @@ class ClevrDataLoader(DataLoader):
     max_samples = kwargs.pop('max_samples', None)
     question_h5_path = kwargs.pop('question_h5')
     image_idx_start_from = kwargs.pop('image_idx_start_from', None)
-    print('Reading questions from ', question_h5_path)
+    # print('Reading questions from ', question_h5_path)
     with h5py.File(question_h5_path, 'r') as question_h5:
       self.dataset = ClevrDataset(question_h5, self.feature_h5, vocab, mode,
                                   max_samples=max_samples,
