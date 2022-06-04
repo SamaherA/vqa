@@ -17,14 +17,14 @@ def main(argv):
 
     # data, MAX_LENGTH, MAX_ARGS, VOCAB_SIZE = load_all_datasets()
 
-    TOKEN_TO_IDX = utils.load_vocab("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json")['question_token_to_idx']
+    TOKEN_TO_IDX = utils.load_vocab("./vqa/data/vocab.json")['question_token_to_idx']
 
-    question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/train_questions.h5'
-    feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/train_features.h5'
+    question_h5 = './vqa/data/data_small_2/train_questions.h5'
+    feature_h5 = './vqa/data/data_small_2/train_features.h5'
     vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
 
-    dev_question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/dev_questions.h5'
-    dev_feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/data_small_2/dev_features.h5'
+    dev_question_h5 = './vqa/data/data_small_2/dev_questions.h5'
+    dev_feature_h5 = './vqa/data/data_small_2/dev_features.h5'
 
     TRAINE_SIZE = h5py.File(question_h5,'r')['questions'][:].shape[0]
     DEV_SIZE = h5py.File(dev_question_h5,'r')['questions'][:].shape[0]
@@ -65,10 +65,6 @@ def main(argv):
             scaffold = f.read()
         return scaffold
 
-    # building batcher
-    # question_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_questions.h5'
-    # feature_h5 = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/train_features.h5'
-    # vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
 
 
     train_loader_kwargs = {
@@ -110,7 +106,7 @@ def main(argv):
 
 
     # build the model
-    sketch = load_sketch_from_file("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/sketch_vqa.d4")
+    sketch = load_sketch_from_file("./vqa/sketch_vqa.d4")
     # print(sketch)
     model = VQAD4Model(sketch, d4_params, data_params, train_params)
     model.build_graph()
@@ -118,7 +114,7 @@ def main(argv):
     graph = tf.get_default_graph()
     print('graph', graph.as_graph_def().ByteSize())
 
-    directory_save = "/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/tmp/vqa/checkpoints/"
+    directory_save = "./vqa/tmp/vqa/checkpoints/"
     import os
     if not os.path.exists(directory_save):
         os.makedirs(directory_save)
@@ -136,7 +132,7 @@ def main(argv):
         #     # accuracy, partial_accuracy = model.run_eval_step(sess, dataset_dev)
         #     exit(0)
 
-        summary_writer = tf.train.SummaryWriter("/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/tmp/summaries/vqa", tf.get_default_graph())
+        summary_writer = tf.train.SummaryWriter("./vqa/tmp/summaries/vqa", tf.get_default_graph())
         sess.run(tf.initialize_all_variables())
 
         for epoch in range(1):
