@@ -21,7 +21,7 @@ def main(argv):
 
     question_h5 = './vqa/data/data_small_2/train_questions.h5'
     feature_h5 = './vqa/data/data_small_2/train_features.h5'
-    vocab = '/Users/sma/Documents/PERSONALIZATION/NADAHARVARD/code/vqa/data/vocab.json'
+    vocab = './vqa/data/vocab.json'
 
     dev_question_h5 = './vqa/data/data_small_2/dev_questions.h5'
     dev_feature_h5 = './vqa/data/data_small_2/dev_features.h5'
