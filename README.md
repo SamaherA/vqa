@@ -21,10 +21,15 @@ pip3 install https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-0.11
 
 ### Dataset
 
-Generate CLEVR dataset form [here](https://github.com/facebookresearch/clevr-dataset-gen). And save the rendered images and the generated CLEVR_questions.json to vqa/data directory.
+Generate CLEVR dataset form [here](https://github.com/facebookresearch/clevr-dataset-gen). 
 
 
-And use this [template](https://github.com/SamaherA/vqa/blob/main/dataset/compare_integer.json) for generating questions.
+Use this [template](https://github.com/SamaherA/vqa/blob/main/dataset/compare_integer.json) for generating questions.
+
+
+And save the rendered images and the generated CLEVR_questions.json to vqa/data directory.
+
+
 
 ## Note
 We edit d4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/extensible_dsm.py), line 275. We changed the type into float32:  create_alg_op_matrixret = np.zeros([size, size,size], dtype=np.float32).
