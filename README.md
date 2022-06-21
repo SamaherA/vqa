@@ -21,13 +21,13 @@ pip3 install https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-0.11
 
 ### Dataset
 
-Generate dataset form [here](https://github.com/facebookresearch/clevr-dataset-gen)
+Generate dataset form [here](https://github.com/facebookresearch/clevr-dataset-gen).
 
 
-And use this [template](https://github.com/SamaherA/vqa/blob/main/dataset/compare_integer.json) for generating questions
+And use this [template](https://github.com/SamaherA/vqa/blob/main/dataset/compare_integer.json) for generating questions.
 
 ## Note
-We edit d4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/extensible_dsm.py), line 275. We changed the type into float32:  create_alg_op_matrixret = np.zeros([size, size,size], dtype=np.float32)
+We edit d4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/extensible_dsm.py), line 275. We changed the type into float32:  create_alg_op_matrixret = np.zeros([size, size,size], dtype=np.float32).
 
 ### Running the experiment
 
@@ -40,7 +40,7 @@ python3 vqa/extract_features.py \
 ```
 
 #### Process questions
-Use this [vocal.json](https://github.com/SamaherA/vqa/blob/main/dataset/vocab.json) for vocabs
+Use this [vocal.json](https://github.com/SamaherA/vqa/blob/main/dataset/vocab.json) for vocabs.
 
 ```
 python3 vqa/preprocess_questions.py  \
@@ -51,7 +51,7 @@ python3 vqa/preprocess_questions.py  \
 
 
 #### Training 
-Use this [vocal.json](https://github.com/SamaherA/vqa/blob/main/dataset/vocab.json) for vocabs
+Use this [vocal.json](https://github.com/SamaherA/vqa/blob/main/dataset/vocab.json) for vocabs.
 
 ```
 python3  trainer.py
