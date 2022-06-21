@@ -37,7 +37,6 @@ We edit d4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/
 python3 vqa/extract_features.py \
 --input_image_dir /data/images\
 --output_h5_file data/train_features.h5
-
 ```
 
 #### Process questions
@@ -48,7 +47,6 @@ python3 vqa/preprocess_questions.py  \
 --input_questions_json data/CLEVR_questions.json \
 --input_vocab_json data/vocab.json \
 --output_h5_file data/train_questions.h5
-
 ```
 
 
