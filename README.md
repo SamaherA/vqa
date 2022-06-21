@@ -21,7 +21,7 @@ pip3 install https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow-0.11
 
 ### Dataset
 
-Generate dataset form [here](https://github.com/facebookresearch/clevr-dataset-gen).
+Generate CLEVR dataset form [here](https://github.com/facebookresearch/clevr-dataset-gen). And save the rendered images and the generated CLEVR_questions.json to vqa/data directory.
 
 
 And use this [template](https://github.com/SamaherA/vqa/blob/main/dataset/compare_integer.json) for generating questions.
