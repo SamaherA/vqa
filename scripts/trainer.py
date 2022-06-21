@@ -19,12 +19,12 @@ def main(argv):
 
     TOKEN_TO_IDX = utils.load_vocab("./vqa/data/vocab.json")['question_token_to_idx']
 
-    question_h5 = './vqa/data/data_small_2/train_questions.h5'
-    feature_h5 = './vqa/data/data_small_2/train_features.h5'
+    question_h5 = './vqa/data/train_questions.h5'
+    feature_h5 = './vqa/data/train_features.h5'
     vocab = './vqa/data/vocab.json'
 
-    dev_question_h5 = './vqa/data/data_small_2/dev_questions.h5'
-    dev_feature_h5 = './vqa/data/data_small_2/dev_features.h5'
+    dev_question_h5 = './vqa/data/dev_questions.h5'
+    dev_feature_h5 = './vqa/data/dev_features.h5'
 
     TRAINE_SIZE = h5py.File(question_h5,'r')['questions'][:].shape[0]
     DEV_SIZE = h5py.File(dev_question_h5,'r')['questions'][:].shape[0]
@@ -106,7 +106,7 @@ def main(argv):
 
 
     # build the model
-    sketch = load_sketch_from_file("./vqa/sketch_vqa.d4")
+    sketch = load_sketch_from_file("./vqa/scripts/sketch_vqa.d4")
     # print(sketch)
     model = VQAD4Model(sketch, d4_params, data_params, train_params)
     model.build_graph()
