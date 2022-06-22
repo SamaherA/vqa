@@ -39,8 +39,8 @@ We edit d4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/
 #### Extract features
 
 ```
-python3 vqa/extract_features.py \
---input_image_dir /data/images\
+python3 scripts/extract_features.py \
+--input_image_dir data/images\
 --output_h5_file data/train_features.h5
 ```
 
@@ -48,7 +48,7 @@ python3 vqa/extract_features.py \
 Use this [vocal.json](https://github.com/SamaherA/vqa/blob/main/dataset/vocab.json) for vocabs.
 
 ```
-python3 vqa/preprocess_questions.py  \
+python3 scripts/preprocess_questions.py  \
 --input_questions_json data/CLEVR_questions.json \
 --input_vocab_json data/vocab.json \
 --output_h5_file data/train_questions.h5
@@ -59,7 +59,7 @@ python3 vqa/preprocess_questions.py  \
 Use this [vocal.json](https://github.com/SamaherA/vqa/blob/main/dataset/vocab.json) for vocabs.
 
 ```
-python3  trainer.py
+python3  scripts/trainer.py
 ```
 
 
