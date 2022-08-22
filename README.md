@@ -5,7 +5,7 @@ We apply ∂4 to a visual question answering problem, and they jointly learned u
 
 ### Dependencies
 
-[d4](https://github.com/uclnlp/d4) interpreter 
+[∂4](https://github.com/uclnlp/d4) interpreter 
 
 Python 3
 
@@ -34,7 +34,7 @@ And save the rendered images and the generated CLEVR_questions.json to vqa/data 
 
 
 ## Note
-We edit d4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/extensible_dsm.py), line 275. We changed the type into float32:  create_alg_op_matrixret = np.zeros([size, size,size], dtype=np.float32).
+We edit ∂4: [extensible_dsm.py](https://github.com/uclnlp/d4/blob/master/d4/dsm/extensible_dsm.py), line 275. We changed the type into float32:  create_alg_op_matrixret = np.zeros([size, size,size], dtype=np.float32).
 
 ## Running the experiment
 
