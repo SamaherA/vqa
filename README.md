@@ -7,7 +7,7 @@ the VQA model. [Here](https://github.com/SamaherA/vqa/blob/main/VQA_documentatio
 
 ### Dependencies
 
-Download [d4](https://github.com/uclnlp/d4) interpreter 
+[d4](https://github.com/uclnlp/d4) interpreter 
 
 Python 3
 
