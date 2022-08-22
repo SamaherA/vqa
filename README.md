@@ -1,7 +1,6 @@
 # VQA using ∂4
 We apply the Differentiable Forth Interpreter (∂4) to a visual question
-answering problem, and they jointly learned using the CLEVR dataset end-to-end. For
-the VQA model. [Here](https://github.com/SamaherA/vqa/blob/main/VQA_documentation.pdf) for more details. 
+answering problem, and they jointly learned using the CLEVR dataset end-to-end. [Here](https://github.com/SamaherA/vqa/blob/main/VQA_documentation.pdf) for more details. 
 
 ## Installation
 
